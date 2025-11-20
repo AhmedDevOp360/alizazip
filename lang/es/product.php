@@ -1,0 +1,57 @@
+<?php
+
+ return [
+     'exc_of_tax' => 'Impuestos (Exc)', /* modified */
+     'inc_of_tax' => 'Impuestos (Inc)', /* modified */
+     'profit_percent' => 'Utilidad (%)',
+     'add_new_product' => 'Crear Nuevo Producto',
+     'add_product_for_labels' => 'Agregar productos para generar etiquetas',
+     'product_type' => 'Tipo de Producto',
+     'category' => 'Categoría',
+     'sub_category' => 'Subcategoría',
+     'unit' => 'Unidad',
+     'brand' => 'Marca',
+     'tax' => 'Impuesto',
+     'sku' => 'Código de Barras',
+     'alert_quantity' => 'Cantidad para alerta', /* modified */
+     'product_name' => 'Producto',
+     'auto_generate' => 'Generar Automáticamente',
+     'manage_stock' => 'Maneja Inventario?',
+     'enable_stock_help' => 'Si el producto es un servicio desmarque esta casilla', /* modified */
+     'barcode_type' => 'Tipo de código de barras',
+     'applicable_tax' => 'Impuesto',
+     'selling_price_tax_type' => 'Tipo de Impuesto',
+     'inclusive' => 'Incluido',
+     'exclusive' => 'Exluido',
+     'edit_product' => 'Editar Producto',
+     'default_purchase_price' => 'PRECIOS DE COMPRA',
+     'default_selling_price' => 'PRECIO DE VENTA',
+     'value' => 'Valor',
+     'variation_name' => 'Nombre de la Variante',
+     'variation_values' => 'Valores de la Variante',
+     'use_template' => 'Usar plantilla',
+     'add_variation' => 'Agregar Variante',
+     'product_added_success' => 'Producto Creado',
+     'product_updated_success' => 'Producto Actualizado',
+     'enable_product_expiry' => 'Habilitar vencimiento del producto',
+     'expiry_period' => 'Período de Caducidad',
+     'expires_in' => 'Expira en',
+     'not_applicable' => 'No aplica',
+     'months' => 'Meses',
+     'days' => 'Dias',
+     'mfg_date' => 'Fecha de Fabricación',
+     'exp_date' => 'Fecha de Vencimiento',
+     'view_product' => 'Ver Producto',
+     'add_product' => 'Crear Producto',
+     'variations' => 'Variantes',
+     'purchase__price' => 'Precio Compra',
+     'sale_price' => 'Precio Venta',
+     'import_products' => 'Importar Productos',
+     'file_to_import' => 'Archivo para Importar',
+     'file_imported_successfully' => 'Archivo importado con éxito',
+     'variation_sku_format' => 'Formato de Codigo de Barras de Variación',
+     'variation_sku_format_help_text' => 'Formato de SKU de Variación - Cuando el SKU de la variación está vacío, se utilizará este formato para generar Codigo de Barras para las variantes.',
+     'sku_number' => 'Número de Codigo de BarrasCodigo de Barras (Ejemplo -> ABC-1, ABC-2)',
+     'sku_variation_number' => 'Codigo de Barras de la variante(Ejemplo -> ABCS, ABCM)'
+     
+ ];
