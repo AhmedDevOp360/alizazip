@@ -163,13 +163,14 @@
 			</div>
 			
 			
-				@if(count($business_locations) == 1)
+				@if(count($business_locations) == 1 && empty($default_location))
 				@php 
-					$default_location = current(array_keys($business_locations->toArray()));
+					// $default_location = current(array_keys($business_locations->toArray()));
 					$search_disable = false; 
 				@endphp
 			@else
-				@php $default_location = null;
+				@php
+				//  $default_location = null;
 				$search_disable = true;
 				@endphp
 			@endif

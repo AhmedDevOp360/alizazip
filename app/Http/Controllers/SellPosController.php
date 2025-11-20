@@ -3782,4 +3782,169 @@ class SellPosController extends Controller
 
         }
     }
+
+    /**
+     * Save POS cart to session
+     * Each product stores its own location_id
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function savePosCartSession(Request $request)
+    {
+        try {
+            $cart_data = $request->input('cart_data');
+
+            // Save cart data to session (product-wise with individual location_id)
+            $session_key = 'pos_cart';
+
+            $request->session()->put($session_key, $cart_data);
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Cart saved to session',
+                'debug' => [
+                    'cart_count' => count($cart_data)
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
+
+    /**
+     * Load POS cart from session
+     * Each product has its own location_id stored
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function loadPosCartSession(Request $request)
+    {
+        try {
+            $session_key = 'pos_cart';
+
+            $cart_data = $request->session()->get($session_key, []);
+
+            return response()->json([
+                'success' => true,
+                'cart_data' => $cart_data
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
+
+    /**
+     * Clear POS cart from session
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function clearPosCartSession(Request $request)
+    {
+        try {
+            $session_key = 'pos_cart';
+
+            $request->session()->forget($session_key);
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Cart cleared from session'
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
+
+    /**
+     * Save POS form data to session
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function savePosFormSession(Request $request)
+    {
+        try {
+            $form_data = $request->input('form_data');
+            $request->session()->put('pos_form_data', $form_data);
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Form data saved to session'
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
+
+    /**
+     * Load POS form data from session
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function loadPosFormSession(Request $request)
+    {
+        try {
+            $form_data = $request->session()->get('pos_form_data', []);
+
+            return response()->json([
+                'success' => true,
+                'form_data' => $form_data
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
+
+    /**
+     * Clear POS form data from session
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function clearPosFormSession(Request $request)
+    {
+        try {
+            $request->session()->forget('pos_form_data');
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Form data cleared from session'
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
 }

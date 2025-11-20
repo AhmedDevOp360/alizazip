@@ -224,6 +224,16 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/purchases/get_suppliers', [PurchaseController::class, 'getSuppliers']);
     Route::post('/purchases/get_purchase_entry_row', [PurchaseController::class, 'getPurchaseEntryRow']);
     Route::post('/purchases/check_ref_number', [PurchaseController::class, 'checkRefNumber']);
+
+    // Purchase cart session routes
+    Route::post('/purchases/save-cart-session', [PurchaseController::class, 'savePurchaseCartSession']);
+    Route::post('/purchases/load-cart-session', [PurchaseController::class, 'loadPurchaseCartSession']);
+    Route::post('/purchases/clear-cart-session', [PurchaseController::class, 'clearPurchaseCartSession']);
+
+    // Purchase form data session routes
+    Route::post('/purchases/save-form-session', [PurchaseController::class, 'savePurchaseFormSession']);
+    Route::post('/purchases/load-form-session', [PurchaseController::class, 'loadPurchaseFormSession']);
+
     Route::resource('purchases', PurchaseController::class)->except(['show']);
 
     Route::get('/toggle-subscription/{id}', [SellPosController::class, 'toggleRecurringInvoices']);
@@ -248,6 +258,17 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/sells/pos/get-recent-transactions', [SellPosController::class, 'getRecentTransactions']);
     Route::get('/sells/pos/get-product-suggestion', [SellPosController::class, 'getProductSuggestion']);
     Route::get('/sells/pos/get-featured-products/{location_id}', [SellPosController::class, 'getFeaturedProducts']);
+
+    // POS cart session routes
+    Route::post('/sells/pos/save-cart-session', [SellPosController::class, 'savePosCartSession']);
+    Route::post('/sells/pos/load-cart-session', [SellPosController::class, 'loadPosCartSession']);
+    Route::post('/sells/pos/clear-cart-session', [SellPosController::class, 'clearPosCartSession']);
+
+    // POS form data session routes
+    Route::post('/sells/pos/save-form-session', [SellPosController::class, 'savePosFormSession']);
+    Route::post('/sells/pos/load-form-session', [SellPosController::class, 'loadPosFormSession']);
+    Route::post('/sells/pos/clear-form-session', [SellPosController::class, 'clearPosFormSession']);
+
     Route::get('/reset-mapping', [SellController::class, 'resetMapping']);
     
     // pos display screen route

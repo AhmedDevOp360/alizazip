@@ -2,6 +2,234 @@ var global_brand_id = null;
 var global_p_category_id = null;
 var global_is_clear_local_storage = false;
 
+// POS Form Data Session Management Functions
+function savePosFormDataToSession() {
+    let customerName =  $('#customer_id option:selected').text().split( ' (');
+    // If the customer name contains a phone number in parentheses, extract only the name part.
+    // Example: "Customer Name (1234567890)" -> "Customer Name"
+    if (customerName.length > 1) {
+        customerName = customerName[0];
+    } else {
+        customerName = customerName[0];
+    }(' (',$('#customer_id option:selected').text());
+    console.log('Selected customer name:', customerName);
+    var form_data = {
+        customer_id: $('#customer_id').val(),
+        customer_name: customerName,
+        location_id: $('#location_id').val(),
+        price_group: $('#price_group').val(),
+        commission_agent: $('#commission_agent').val(),
+        transaction_date: $('#transaction_date').val(),
+        discount_type: $('#discount_type').val(),
+        discount_amount: $('#discount_amount').val(),
+        tax_rate_id: $('#tax_rate_id').val(),
+        tax_calculation_amount: $('#tax_calculation_amount').val(),
+        shipping_details: $('#shipping_details').val(),
+        shipping_charges: $('#shipping_charges').val(),
+        shipping_address: $('#shipping_address').val(),
+        additional_notes: $('#sale_note').val(),
+        invoice_scheme_id: $('#invoice_scheme_id').val(),
+        types_of_service_id: $('#types_of_service_id').val(),
+        invoice_layout_id: $('#invoice_layout_id').val()
+    };
+
+    $.ajax({
+        method: 'POST',
+        url: '/sells/pos/save-form-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            form_data: form_data
+        },
+        dataType: 'json',
+        async: true
+    });
+}
+
+function loadPosFormDataFromSession() {
+    $.ajax({
+        method: 'POST',
+        url: '/sells/pos/load-form-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        dataType: 'json',
+        async: false,
+        success: function(result) {
+            if (result.success && result.form_data) {
+                var data = result.form_data;
+
+                // Restore customer
+                console.log('Restoring customer from session:', data);
+                if (data.customer_id && data.customer_name) {
+                    // Use the get customers ajax call to fetch and select the customer
+                    $.ajax({
+                        url: '/contacts/customers',
+                        dataType: 'json',
+                        data: {
+                            q: data.customer_name
+                        },
+                        success: function(response) {
+                            console.log('Customers fetched:', response);
+
+                            // The response is an array directly
+                            var customers = Array.isArray(response) ? response : (response.results || []);
+
+                            if (customers && customers.length > 0) {
+                                // Find the matching customer by ID
+                                var matchedCustomer = customers.find(function(customer) {
+                                    return customer.id == data.customer_id;
+                                });
+
+                                if (matchedCustomer) {
+                                    // Create the option with the full text format
+                                    var optionText = matchedCustomer.text;
+
+                                    var newOption = new Option(optionText, matchedCustomer.id, true, true);
+                                    $('#customer_id').html('').append(newOption);
+
+                                    // Manually trigger the select2:select event with full data
+                                    $('#customer_id').trigger({
+                                        type: 'select2:select',
+                                        params: {
+                                            data: matchedCustomer
+                                        }
+                                    });
+
+                                    console.log('Customer restored:', optionText);
+                                } else {
+                                    console.warn('Customer ID not found in results');
+                                }
+                            } else {
+                                console.warn('No customers found for:', data.customer_name);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error fetching customers:', error);
+                        }
+                    });
+                }
+
+                // Restore price group
+                if (data.price_group) {
+                    $('#price_group').val(data.price_group).trigger('change');
+                }
+
+                // Restore commission agent
+                if (data.commission_agent) {
+                    $('#commission_agent').val(data.commission_agent).trigger('change');
+                }
+
+                // Restore discount
+                if (data.discount_type) {
+                    $('#discount_type').val(data.discount_type);
+                }
+                if (data.discount_amount) {
+                    __write_number($('#discount_amount'), data.discount_amount);
+                }
+
+                // Restore tax
+                if (data.tax_rate_id) {
+                    $('#tax_rate_id').val(data.tax_rate_id);
+                }
+
+                // Restore shipping
+                if (data.shipping_charges) {
+                    __write_number($('#shipping_charges'), data.shipping_charges);
+                }
+                if (data.shipping_details) {
+                    $('#shipping_details').val(data.shipping_details);
+                }
+                if (data.shipping_address) {
+                    $('#shipping_address').val(data.shipping_address);
+                }
+
+                // Restore notes
+                if (data.additional_notes) {
+                    $('#sale_note').val(data.additional_notes);
+                }
+
+                // Restore invoice settings
+                if (data.invoice_scheme_id) {
+                    $('#invoice_scheme_id').val(data.invoice_scheme_id).trigger('change');
+                }
+                if (data.types_of_service_id) {
+                    $('#types_of_service_id').val(data.types_of_service_id).trigger('change');
+                }
+                if (data.invoice_layout_id) {
+                    $('#invoice_layout_id').val(data.invoice_layout_id).trigger('change');
+                }
+            }
+        }
+    });
+}
+
+// POS Cart Session Management Functions
+function saveCartToSession() {
+    var default_location_id = $('#location_id').val();
+    if (!default_location_id) {
+        return;
+    }
+
+    var cart_data = [];
+    $('#pos_table tbody tr.product_row').each(function() {
+        var $row = $(this);
+        var item = {
+            variation_id: $row.find('.row_variation_id').val(),
+            quantity: __read_number($row.find('.pos_quantity')),
+            // Store the specific location for this product line
+            location_id: $row.find('.line_location_id').val() || default_location_id
+        };
+        cart_data.push(item);
+    });
+
+    $.ajax({
+        method: 'POST',
+        url: '/sells/pos/save-cart-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            cart_data: cart_data
+        },
+        dataType: 'json',
+        async: true
+    });
+}
+
+function loadCartFromSession() {
+    $.ajax({
+        method: 'POST',
+        url: '/sells/pos/load-cart-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        dataType: 'json',
+        async: false,
+        success: function(result) {
+            if (result.success && result.cart_data && result.cart_data.length > 0) {
+                // Load products from session with their specific locations
+                result.cart_data.forEach(function(item) {
+                    // Set the location for this specific product before adding it
+                    if (item.location_id) {
+                        $('#select_location_id').val(item.location_id).trigger('change');
+                    }
+                    pos_product_row(item.variation_id, null, null, item.quantity);
+                });
+            }
+        }
+    });
+}
+
+function clearCartSession() {
+    $.ajax({
+        method: 'POST',
+        url: '/sells/pos/clear-cart-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        dataType: 'json',
+        async: true
+    });
+}
+
 // Function to check cost price validation when quantity changes (only if enable_msp exists and value is 1)
 function checkCostPriceValidation(tr) {
     var qtyInput = tr.find('input.pos_quantity');
@@ -220,6 +448,22 @@ $(document).ready(function () {
         try {
             updateAllSelectedQtyBadges();
         } catch (e) {}
+
+        // Load form data and cart from session only if not in edit mode
+        if ($('form#add_pos_sell_form').length > 0) {
+            loadPosFormDataFromSession();
+
+            if ($('#pos_table tbody tr.product_row').length === 0) {
+                loadCartFromSession();
+            }
+        }
+
+        // Save form data when fields change
+        $(document).on('change', '#customer_id, #price_group, #commission_agent, #discount_type, #discount_amount, #tax_rate_id, #shipping_charges, #shipping_details, #shipping_address, #sale_note, #invoice_scheme_id, #types_of_service_id, #invoice_layout_id', function() {
+            if ($('form#add_pos_sell_form').length > 0) {
+                savePosFormDataToSession();
+            }
+        });
     }
 
     // Debounced search for product suggestions
@@ -1225,6 +1469,9 @@ $(document).ready(function () {
                 }
             }
         } catch (e) {}
+
+        // Save cart to session after removing product
+        saveCartToSession();
     });
 
     // Function to remove all qty badges (used after cart reset or sale complete)
@@ -2446,13 +2693,14 @@ $(document).ready(function () {
 
     //Confirmation before page load.
     window.onbeforeunload = function () {
-        if ($('form#edit_pos_sell_form').length == 0) {
-            if ($('table#pos_table tbody tr').length > 0) {
-                return LANG.sure;
-            } else {
-                return null;
-            }
-        }
+        console.log('onbeforeunload called');
+        // if ($('form#edit_pos_sell_form').length == 0) {
+        //     if ($('table#pos_table tbody tr').length > 0) {
+        //         return LANG.sure;
+        //     } else {
+        //         return null;
+        //     }
+        // }
     };
     $(window).resize(function () {
         var win_height = $(window).height();
@@ -3000,12 +3248,20 @@ function pos_product_row(
                             updateProductQtyBadge(variation_id);
                         }
                     } catch (e) {}
+
+                    // Save cart to session after adding product
+                    saveCartToSession();
                 } else {
                     toastr.error(result.msg);
                     $('input#search_product').focus().select();
                 }
             },
         });
+    }
+
+    // Save cart to session after incrementing quantity
+    if (!add_via_ajax && is_added) {
+        saveCartToSession();
     }
 }
 
@@ -3338,6 +3594,20 @@ function reset_pos_form() {
         'span.total_quantity, span.price_total, span#total_discount, span#order_tax, span#total_payable, span#shipping_charges_amount'
     ).text(0);
     $('span.total_payable_span', 'span.total_paying', 'span.balance_due').text(0);
+
+    // Clear cart and form data from session
+    clearCartSession();
+
+    // Also clear form data session
+    $.ajax({
+        method: 'POST',
+        url: '/sells/pos/clear-form-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        dataType: 'json',
+        async: true
+    });
 
     $('#modal_payment')
         .find('.remove_payment_row')

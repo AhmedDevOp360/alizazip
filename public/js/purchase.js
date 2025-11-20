@@ -1,3 +1,326 @@
+// Purchase Form Data Session Management Functions
+function savePurchaseFormDataToSession() {
+    var form_data = {
+        supplier_id: $('#supplier_id').val(),
+        supplier_name: $('#supplier_id option:selected').text(),
+        location_id: $('#location_id').val(),
+        ref_no: $('#ref_no').val(),
+        transaction_date: $('#transaction_date').val(),
+        status: $('#status').val(),
+        exchange_rate: $('input[name="exchange_rate"]').val(),
+        pay_term_number: $('input[name="pay_term_number"]').val(),
+        pay_term_type: $('#pay_term_type').val(),
+        cufe: $('input[name="cufe"]').val(),
+        custom_field_1: $('input[name="custom_field_1"]').val(),
+        custom_field_2: $('input[name="custom_field_2"]').val(),
+        custom_field_3: $('input[name="custom_field_3"]').val(),
+        custom_field_4: $('input[name="custom_field_4"]').val(),
+        discount_type: $('#discount_type').val(),
+        discount_amount: $('#discount_amount').val(),
+        tax_id: $('#tax_id').val(),
+        shipping_details: $('#shipping_details').val(),
+        shipping_charges: $('#shipping_charges').val(),
+        shipping_custom_field_1: $('input[name="shipping_custom_field_1"]').val(),
+        shipping_custom_field_2: $('input[name="shipping_custom_field_2"]').val(),
+        shipping_custom_field_3: $('input[name="shipping_custom_field_3"]').val(),
+        shipping_custom_field_4: $('input[name="shipping_custom_field_4"]').val(),
+        shipping_custom_field_5: $('input[name="shipping_custom_field_5"]').val(),
+        additional_expense_key_1: $('#additional_expense_key_1').val(),
+        additional_expense_value_1: $('#additional_expense_value_1').val(),
+        additional_expense_key_2: $('#additional_expense_key_2').val(),
+        additional_expense_value_2: $('#additional_expense_value_2').val(),
+        additional_expense_key_3: $('#additional_expense_key_3').val(),
+        additional_expense_value_3: $('#additional_expense_value_3').val(),
+        additional_expense_key_4: $('#additional_expense_key_4').val(),
+        additional_expense_value_4: $('#additional_expense_value_4').val(),
+        additional_notes: $('#additional_notes').val(),
+        payment_type: $('.payment_types_dropdown').val(),
+        payment_amount: $('.payment-amount').val()
+    };
+
+    $.ajax({
+        method: 'POST',
+        url: '/purchases/save-form-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            form_data: form_data
+        },
+        dataType: 'json',
+        async: true
+    });
+}
+
+function loadPurchaseFormDataFromSession() {
+    $.ajax({
+        method: 'POST',
+        url: '/purchases/load-form-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        dataType: 'json',
+        async: false,
+        success: function(result) {
+            if (result.success && result.form_data) {
+                var data = result.form_data;
+
+                // Restore supplier
+                console.log('Restoring supplier from session:', data);
+                if (data.supplier_id && data.supplier_name) {
+                    // Use the get_suppliers ajax call to fetch and select the supplier
+                    $.ajax({
+                        url: '/purchases/get_suppliers',
+                        dataType: 'json',
+                        data: {
+                            q: data.supplier_name
+                        },
+                        success: function(response) {
+                            console.log('Suppliers fetched:', response);
+
+                            // The response is an array directly, not wrapped in results
+                            var suppliers = Array.isArray(response) ? response : (response.results || []);
+
+                            if (suppliers && suppliers.length > 0) {
+                                // Find the matching supplier by ID
+                                var matchedSupplier = suppliers.find(function(supplier) {
+                                    return supplier.id == data.supplier_id;
+                                });
+
+                                if (matchedSupplier) {
+                                    // Create the option with the full text format
+                                    var optionText = matchedSupplier.text;
+                                    if (matchedSupplier.business_name && matchedSupplier.contact_id) {
+                                        optionText = matchedSupplier.text + ' - ' + matchedSupplier.business_name + ' (' + matchedSupplier.contact_id + ')';
+                                    }
+
+                                    var newOption = new Option(optionText, matchedSupplier.id, true, true);
+                                    $('#supplier_id').html('').append(newOption);
+
+                                    // Manually trigger the select2:select event with full data
+                                    $('#supplier_id').trigger({
+                                        type: 'select2:select',
+                                        params: {
+                                            data: matchedSupplier
+                                        }
+                                    });
+
+                                    console.log('Supplier restored:', optionText);
+                                } else {
+                                    console.warn('Supplier ID not found in results');
+                                }
+                            } else {
+                                console.warn('No suppliers found for:', data.supplier_name);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error fetching suppliers:', error);
+                        }
+                    });
+                }
+
+                // Restore ref_no
+                if (data.ref_no) {
+                    $('#ref_no').val(data.ref_no);
+                }
+
+                // Restore status
+                if (data.status) {
+                    $('#status').val(data.status).trigger('change');
+                }
+
+                // Restore exchange rate
+                if (data.exchange_rate) {
+                    $('input[name="exchange_rate"]').val(data.exchange_rate);
+                }
+
+                // Restore pay term
+                if (data.pay_term_number) {
+                    $('input[name="pay_term_number"]').val(data.pay_term_number);
+                }
+                if (data.pay_term_type) {
+                    $('#pay_term_type').val(data.pay_term_type).trigger('change');
+                }
+
+                // Restore cufe
+                if (data.cufe) {
+                    $('input[name="cufe"]').val(data.cufe);
+                }
+
+                // Restore custom fields
+                if (data.custom_field_1) {
+                    $('input[name="custom_field_1"]').val(data.custom_field_1);
+                }
+                if (data.custom_field_2) {
+                    $('input[name="custom_field_2"]').val(data.custom_field_2);
+                }
+                if (data.custom_field_3) {
+                    $('input[name="custom_field_3"]').val(data.custom_field_3);
+                }
+                if (data.custom_field_4) {
+                    $('input[name="custom_field_4"]').val(data.custom_field_4);
+                }
+
+                // Restore discount
+                if (data.discount_type) {
+                    $('#discount_type').val(data.discount_type).trigger('change');
+                }
+                if (data.discount_amount) {
+                    __write_number($('#discount_amount'), data.discount_amount);
+                }
+
+                // Restore tax
+                if (data.tax_id) {
+                    $('#tax_id').val(data.tax_id).trigger('change');
+                }
+
+                // Restore shipping
+                if (data.shipping_charges) {
+                    __write_number($('#shipping_charges'), data.shipping_charges);
+                }
+                if (data.shipping_details) {
+                    $('#shipping_details').val(data.shipping_details);
+                }
+
+                // Restore shipping custom fields
+                if (data.shipping_custom_field_1) {
+                    $('input[name="shipping_custom_field_1"]').val(data.shipping_custom_field_1);
+                }
+                if (data.shipping_custom_field_2) {
+                    $('input[name="shipping_custom_field_2"]').val(data.shipping_custom_field_2);
+                }
+                if (data.shipping_custom_field_3) {
+                    $('input[name="shipping_custom_field_3"]').val(data.shipping_custom_field_3);
+                }
+                if (data.shipping_custom_field_4) {
+                    $('input[name="shipping_custom_field_4"]').val(data.shipping_custom_field_4);
+                }
+                if (data.shipping_custom_field_5) {
+                    $('input[name="shipping_custom_field_5"]').val(data.shipping_custom_field_5);
+                }
+
+                // Restore additional expenses
+                if (data.additional_expense_key_1) {
+                    $('#additional_expense_key_1').val(data.additional_expense_key_1);
+                }
+                if (data.additional_expense_value_1) {
+                    __write_number($('#additional_expense_value_1'), data.additional_expense_value_1);
+                }
+                if (data.additional_expense_key_2) {
+                    $('#additional_expense_key_2').val(data.additional_expense_key_2);
+                }
+                if (data.additional_expense_value_2) {
+                    __write_number($('#additional_expense_value_2'), data.additional_expense_value_2);
+                }
+                if (data.additional_expense_key_3) {
+                    $('#additional_expense_key_3').val(data.additional_expense_key_3);
+                }
+                if (data.additional_expense_value_3) {
+                    __write_number($('#additional_expense_value_3'), data.additional_expense_value_3);
+                }
+                if (data.additional_expense_key_4) {
+                    $('#additional_expense_key_4').val(data.additional_expense_key_4);
+                }
+                if (data.additional_expense_value_4) {
+                    __write_number($('#additional_expense_value_4'), data.additional_expense_value_4);
+                }
+
+                // Restore notes
+                if (data.additional_notes) {
+                    $('#additional_notes').val(data.additional_notes);
+                }
+
+                // Restore payment
+                if (data.payment_type) {
+                    $('.payment_types_dropdown').val(data.payment_type).trigger('change');
+                }
+                if (data.payment_amount) {
+                    __write_number($('.payment-amount'), data.payment_amount);
+                }
+            }
+        }
+    });
+}
+
+// Purchase Cart Session Management Functions
+function savePurchaseCartToSession() {
+    var location_id = $('#location_id').val();
+    if (!location_id) {
+        return;
+    }
+
+    var cart_data = [];
+    $('#purchase_entry_table tbody tr').each(function() {
+        var $row = $(this);
+        // Find product_id and variation_id by name attribute since they don't have specific classes
+        var product_id = $row.find('input[name*="[product_id]"]').val();
+        var variation_id = $row.find('input.hidden_variation_id, input[name*="[variation_id]"]').val();
+
+        if (product_id) {
+            var item = {
+                product_id: product_id,
+                variation_id: variation_id,
+                quantity: __read_number($row.find('.purchase_quantity'), true)
+            };
+            cart_data.push(item);
+        }
+    });
+    console.log('Purchase cart data:', cart_data);
+    $.ajax({
+        method: 'POST',
+        url: '/purchases/save-cart-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            location_id: location_id,
+            cart_data: cart_data
+        },
+        dataType: 'json',
+        async: true
+    });
+}
+
+function loadPurchaseCartFromSession() {
+    var location_id = $('#location_id').val();
+    if (!location_id) {
+        return;
+    }
+
+    $.ajax({
+        method: 'POST',
+        url: '/purchases/load-cart-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            location_id: location_id
+        },
+        dataType: 'json',
+        async: false,
+        success: function(result) {
+            if (result.success && result.cart_data && result.cart_data.length > 0) {
+                // Load products from session
+                result.cart_data.forEach(function(item) {
+                    get_purchase_entry_row(item.product_id, item.variation_id);
+                });
+            }
+        }
+    });
+}
+
+function clearPurchaseCartSession() {
+    var location_id = $('#location_id').val();
+    if (!location_id) {
+        return;
+    }
+
+    $.ajax({
+        method: 'POST',
+        url: '/purchases/clear-cart-session',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            location_id: location_id
+        },
+        dataType: 'json',
+        async: true
+    });
+}
+
 $(document).ready(function() {
     if ($('input#iraqi_selling_price_adjustment').length > 0) {
         iraqi_selling_price_adjustment = true;
@@ -227,6 +550,9 @@ $(document).ready(function() {
                 update_table_total();
                 update_grand_total();
                 update_table_sr_number();
+
+                // Save cart to session after removing product
+                savePurchaseCartToSession();
             }
         });
     });
@@ -738,6 +1064,51 @@ $(document).ready(function() {
         cp_element.change();
     });
     toggle_search();
+
+    // Load form data and purchase cart from session only if not in edit mode
+    if ($('form#add_purchase_form').length > 0) {
+        loadPurchaseFormDataFromSession();
+
+        if ($('#purchase_entry_table tbody tr').length === 0) {
+            var location_id = $('#location_id').val();
+            if (location_id) {
+                // Location is already selected (from session), load the cart
+                loadPurchaseCartFromSession();
+            }
+        }
+    }
+
+    // Save form data when fields change
+    $(document).on('change',
+        '#supplier_id, #ref_no, #status, input[name="exchange_rate"], input[name="pay_term_number"], #pay_term_type, ' +
+        'input[name="cufe"], input[name="custom_field_1"], input[name="custom_field_2"], input[name="custom_field_3"], input[name="custom_field_4"], ' +
+        '#discount_type, #discount_amount, #tax_id, #shipping_charges, #shipping_details, ' +
+        'input[name="shipping_custom_field_1"], input[name="shipping_custom_field_2"], input[name="shipping_custom_field_3"], ' +
+        'input[name="shipping_custom_field_4"], input[name="shipping_custom_field_5"], ' +
+        '#additional_expense_key_1, #additional_expense_value_1, #additional_expense_key_2, #additional_expense_value_2, ' +
+        '#additional_expense_key_3, #additional_expense_value_3, #additional_expense_key_4, #additional_expense_value_4, ' +
+        '#additional_notes, .payment_types_dropdown, .payment-amount',
+    function() {
+        if ($('form#add_purchase_form').length > 0) {
+            savePurchaseFormDataToSession();
+        }
+    });
+
+    // Also save on blur for text inputs to catch manual typing
+    $(document).on('blur',
+        '#ref_no, input[name="exchange_rate"], input[name="pay_term_number"], input[name="cufe"], ' +
+        'input[name="custom_field_1"], input[name="custom_field_2"], input[name="custom_field_3"], input[name="custom_field_4"], ' +
+        '#discount_amount, #shipping_charges, #shipping_details, ' +
+        'input[name="shipping_custom_field_1"], input[name="shipping_custom_field_2"], input[name="shipping_custom_field_3"], ' +
+        'input[name="shipping_custom_field_4"], input[name="shipping_custom_field_5"], ' +
+        '#additional_expense_key_1, #additional_expense_value_1, #additional_expense_key_2, #additional_expense_value_2, ' +
+        '#additional_expense_key_3, #additional_expense_value_3, #additional_expense_key_4, #additional_expense_value_4, ' +
+        '#additional_notes, .payment-amount',
+    function() {
+        if ($('form#add_purchase_form').length > 0) {
+            savePurchaseFormDataToSession();
+        }
+    });
 });
 
 var global_brand_id = null;
@@ -819,6 +1190,9 @@ function append_purchase_lines(data, row_count, trigger_change = false) {
             $(data).find('.purchase_quantity').length + parseInt(row_count)
         );
     }
+
+    // Save cart to session after adding product
+    savePurchaseCartToSession();
 }
 
 function update_purchase_entry_row_values(row) {
@@ -1142,6 +1516,13 @@ $(document).on('change', '#location_id', function() {
     update_table_total();
     update_grand_total();
     update_table_sr_number();
+
+    // Save selected location to session and clear cart for old location
+    var new_location_id = $(this).val();
+    if (new_location_id) {
+        // Save the new location
+        savePurchaseCartToSession();
+    }
 });
 
 $(document).on('shown.bs.modal', '.quick_add_product_modal', function(){

@@ -308,8 +308,11 @@ class PurchaseController extends Controller
         $type_regimes = TypeRegime::pluck('name','id');
         $type_liabilities = TypeLiability::pluck('name','id');
 
+        // Get last used purchase location from session
+        $default_location = (int) request()->session()->get('last_purchase_location_id', null);
+
         return view('purchase.create')
-            ->with(compact('taxes', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'customer_groups', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'common_settings', 'type_document_identifications', 'departments', 'municipalities', 'type_regimes', 'type_liabilities'));
+            ->with(compact('taxes', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'customer_groups', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'common_settings', 'type_document_identifications', 'departments', 'municipalities', 'type_regimes', 'type_liabilities', 'default_location'));
     }
 
     /**
@@ -449,6 +452,11 @@ class PurchaseController extends Controller
             PurchaseCreatedOrModified::dispatch($transaction);
 
             DB::commit();
+
+            // Clear purchase cart and form data from session after successful purchase
+            $request->session()->forget('purchase_cart');
+            $request->session()->forget('last_purchase_location_id');
+            $request->session()->forget('purchase_form_data');
 
             $output = ['success' => 1,
                 'msg' => __('purchase.purchase_add_success'),
@@ -1536,5 +1544,175 @@ class PurchaseController extends Controller
         }
 
         return $output;
+    }
+
+    /**
+     * Save purchase cart to session
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function savePurchaseCartSession(Request $request)
+    {
+        try {
+            $cart_data = $request->input('cart_data');
+
+            // Save cart data to session with location-specific key
+            $location_id = $request->input('location_id');
+            $session_key = 'purchase_cart';
+            $request->session()->put($session_key, $cart_data);
+
+            // Also save the last used location_id
+            $request->session()->put('last_purchase_location_id', $location_id);
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Purchase cart saved to session',
+                'debug' => [
+                    'location_id' => $location_id,
+                    'session_key' => $session_key,
+                    'cart_count' => count($cart_data)
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
+
+    /**
+     * Load purchase cart from session
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function loadPurchaseCartSession(Request $request)
+    {
+        try {
+            $location_id = $request->input('location_id');
+            $session_key = 'purchase_cart';
+
+            $cart_data = $request->session()->get($session_key, []);
+
+            return response()->json([
+                'success' => true,
+                'cart_data' => $cart_data
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
+
+    /**
+     * Clear purchase cart from session
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function clearPurchaseCartSession(Request $request)
+    {
+        try {
+            $location_id = $request->input('location_id');
+            $session_key = 'purchase_cart';
+
+            $request->session()->forget($session_key);
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Purchase cart cleared from session'
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
+
+    /**
+     * Save purchase form data to session
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function savePurchaseFormSession(Request $request)
+    {
+        try {
+            $form_data = $request->input('form_data');
+            $request->session()->put('purchase_form_data', $form_data);
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Form data saved to session'
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
+
+    /**
+     * Load purchase form data from session
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function loadPurchaseFormSession(Request $request)
+    {
+        try {
+            $form_data = $request->session()->get('purchase_form_data', []);
+
+            return response()->json([
+                'success' => true,
+                'form_data' => $form_data
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
+    }
+
+    /**
+     * Clear purchase form data from session
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function clearPurchaseFormSession(Request $request)
+    {
+        try {
+            $request->session()->forget('purchase_form_data');
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Form data cleared from session'
+            ]);
+        } catch (\Exception $e) {
+            \Log::emergency('File:' . $e->getFile() . 'Line:' . $e->getLine() . 'Message:' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'msg' => __('messages.something_went_wrong')
+            ]);
+        }
     }
 }
