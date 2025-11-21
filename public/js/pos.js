@@ -457,11 +457,18 @@ $(document).ready(function () {
                 loadCartFromSession();
             }
         }
-
+     let callSaveFormData = false;   
         // Save form data when fields change
         $(document).on('change', '#customer_id, #price_group, #commission_agent, #discount_type, #discount_amount, #tax_rate_id, #shipping_charges, #shipping_details, #shipping_address, #sale_note, #invoice_scheme_id, #types_of_service_id, #invoice_layout_id', function() {
             if ($('form#add_pos_sell_form').length > 0) {
-                savePosFormDataToSession();
+                if(!callSaveFormData){
+                    setTimeout(function () {
+                        savePosFormDataToSession();
+                        console.log('POS form data saved to session.');
+                    }, 2000);
+                }else{
+                    savePosFormDataToSession();
+                }
             }
         });
     }

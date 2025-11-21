@@ -1,8 +1,55 @@
 // Purchase Form Data Session Management Functions
+// Flag to prevent saving during page load
+var is_page_loading = true;
+
 function savePurchaseFormDataToSession() {
+    // Don't save if page is still loading
+    if (is_page_loading) {
+        return;
+    }
+
+    // Check if supplier has a value before saving
+    var supplier_id = $('#supplier_id').val();
+    var supplier_name = $('#supplier_id option:selected').text();
+
+    // Don't save if supplier_id is empty or supplier_name is invalid
+    if (!supplier_id || !supplier_name || supplier_name.trim() === '' || supplier_name === 'undefined') {
+        supplier_id = null;
+        supplier_name = null;
+    }
+
+    // Collect all product rows data
+    var products = [];
+    $('#purchase_entry_table tbody tr').each(function() {
+        var $row = $(this);
+        var product_id = $row.find('input[name*="[product_id]"]').val();
+        var variation_id = $row.find('input[name*="[variation_id]"]').val();
+
+        if (product_id) {
+            var product_data = {
+                product_id: product_id,
+                variation_id: variation_id,
+                quantity: $row.find('.purchase_quantity').val(),
+                pp_without_discount: $row.find('.purchase_unit_cost_without_discount').val(),
+                discount_percent: $row.find('.inline_discounts').val(),
+                purchase_price: $row.find('.purchase_unit_cost').val(),
+                purchase_line_tax_id: $row.find('.purchase_line_tax_id').val(),
+                purchase_price_inc_tax: $row.find('.purchase_unit_cost_after_tax').val(),
+                profit_percent: $row.find('.profit_percent').val(),
+                default_sell_price: $row.find('.default_sell_price').val(),
+                lot_number: $row.find('input[name*="[lot_number]"]').val(),
+                mfg_date: $row.find('.mfg_date').val(),
+                exp_date: $row.find('.exp_date').val(),
+                sub_unit_id: $row.find('.sub_unit').val(),
+                secondary_unit_quantity: $row.find('input[name*="[secondary_unit_quantity]"]').val()
+            };
+            products.push(product_data);
+        }
+    });
+
     var form_data = {
-        supplier_id: $('#supplier_id').val(),
-        supplier_name: $('#supplier_id option:selected').text(),
+        supplier_id: supplier_id,
+        supplier_name: supplier_name,
         location_id: $('#location_id').val(),
         ref_no: $('#ref_no').val(),
         transaction_date: $('#transaction_date').val(),
@@ -35,7 +82,8 @@ function savePurchaseFormDataToSession() {
         additional_expense_value_4: $('#additional_expense_value_4').val(),
         additional_notes: $('#additional_notes').val(),
         payment_type: $('.payment_types_dropdown').val(),
-        payment_amount: $('.payment-amount').val()
+        payment_amount: $('.payment-amount').val(),
+        products: products
     };
 
     $.ajax({
@@ -65,7 +113,7 @@ function loadPurchaseFormDataFromSession() {
 
                 // Restore supplier
                 console.log('Restoring supplier from session:', data);
-                if (data.supplier_id && data.supplier_name) {
+                if (data.supplier_id && data.supplier_name && data.supplier_name !== 'null' && data.supplier_name.trim() !== '') {
                     // Use the get_suppliers ajax call to fetch and select the supplier
                     $.ajax({
                         url: '/purchases/get_suppliers',
@@ -73,6 +121,7 @@ function loadPurchaseFormDataFromSession() {
                         data: {
                             q: data.supplier_name
                         },
+                        async: false,
                         success: function(response) {
                             console.log('Suppliers fetched:', response);
 
@@ -235,9 +284,100 @@ function loadPurchaseFormDataFromSession() {
                 if (data.payment_amount) {
                     __write_number($('.payment-amount'), data.payment_amount);
                 }
+
+                // Restore products if available
+                if (data.products && data.products.length > 0) {
+                    // Store product data for later restoration
+                    window.saved_product_data = data.products;
+
+                    // Load products first via get_purchase_entry_row
+                    data.products.forEach(function(product) {
+                        if (product.product_id && product.variation_id) {
+                            get_purchase_entry_row(product.product_id, product.variation_id);
+                        }
+                    });
+
+                    // After a short delay, restore all product values
+                    setTimeout(function() {
+                        restoreProductValues();
+                    }, 500);
+                }
             }
         }
     });
+}
+
+// Function to restore product values after products are loaded
+function restoreProductValues() {
+    if (!window.saved_product_data) {
+        return;
+    }
+
+    var products = window.saved_product_data;
+    var $rows = $('#purchase_entry_table tbody tr');
+
+    products.forEach(function(product, index) {
+        if (index < $rows.length) {
+            var $row = $($rows[index]);
+
+            // Restore all product field values
+            if (product.quantity) {
+                $row.find('.purchase_quantity').val(product.quantity);
+            }
+            if (product.pp_without_discount) {
+                $row.find('.purchase_unit_cost_without_discount').val(product.pp_without_discount);
+            }
+            if (product.discount_percent) {
+                $row.find('.inline_discounts').val(product.discount_percent);
+            }
+            if (product.purchase_price) {
+                $row.find('.purchase_unit_cost').val(product.purchase_price);
+            }
+            if (product.purchase_line_tax_id) {
+                $row.find('.purchase_line_tax_id').val(product.purchase_line_tax_id).trigger('change');
+            }
+            if (product.purchase_price_inc_tax) {
+                $row.find('.purchase_unit_cost_after_tax').val(product.purchase_price_inc_tax);
+            }
+            if (product.profit_percent) {
+                $row.find('.profit_percent').val(product.profit_percent);
+            }
+            if (product.default_sell_price) {
+                $row.find('.default_sell_price').val(product.default_sell_price);
+            }
+            if (product.lot_number) {
+                $row.find('input[name*="[lot_number]"]').val(product.lot_number);
+            }
+            if (product.mfg_date) {
+                $row.find('.mfg_date').val(product.mfg_date);
+            }
+            if (product.exp_date) {
+                $row.find('.exp_date').val(product.exp_date);
+            }
+            if (product.sub_unit_id) {
+                $row.find('.sub_unit').val(product.sub_unit_id).trigger('change');
+            }
+            if (product.secondary_unit_quantity) {
+                $row.find('input[name*="[secondary_unit_quantity]"]').val(product.secondary_unit_quantity);
+            }
+
+            // Trigger change event on quantity to update calculations
+            $row.find('.purchase_quantity').trigger('change');
+
+            // Update total stock badge with restored quantity
+            if (product.quantity) {
+                var quantity = __read_number($row.find('.purchase_quantity'), true);
+                updateTotalStockBadge($row, quantity);
+            }
+        }
+    });
+
+    // Clear saved data
+    window.saved_product_data = null;
+
+    // Update totals
+    update_table_total();
+    update_grand_total();
 }
 
 // Purchase Cart Session Management Functions
@@ -551,8 +691,8 @@ $(document).ready(function() {
                 update_grand_total();
                 update_table_sr_number();
 
-                // Save cart to session after removing product
-                savePurchaseCartToSession();
+                // Save form data to session after removing product
+                savePurchaseFormDataToSession();
             }
         });
     });
@@ -1076,6 +1216,11 @@ $(document).ready(function() {
                 loadPurchaseCartFromSession();
             }
         }
+
+        // Set flag to false after page load is complete to enable saving on changes
+        setTimeout(function() {
+            is_page_loading = false;
+        }, 1000);
     }
 
     // Save form data when fields change
@@ -1107,6 +1252,17 @@ $(document).ready(function() {
     function() {
         if ($('form#add_purchase_form').length > 0) {
             savePurchaseFormDataToSession();
+        }
+    });
+
+    // Save form data when product table changes
+    $(document).on('change blur', '#purchase_entry_table input, #purchase_entry_table select', function() {
+        if ($('form#add_purchase_form').length > 0) {
+            // Use debounce to avoid too many saves
+            clearTimeout(window.productSaveTimeout);
+            window.productSaveTimeout = setTimeout(function() {
+                savePurchaseFormDataToSession();
+            }, 500);
         }
     });
 });
@@ -1191,8 +1347,8 @@ function append_purchase_lines(data, row_count, trigger_change = false) {
         );
     }
 
-    // Save cart to session after adding product
-    savePurchaseCartToSession();
+    // Save form data to session after adding product
+    savePurchaseFormDataToSession();
 }
 
 function update_purchase_entry_row_values(row) {
