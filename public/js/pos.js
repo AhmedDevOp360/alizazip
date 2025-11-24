@@ -1695,7 +1695,7 @@ $(document).ready(function () {
         $('div#confirmSuspendModal').modal('hide');
         pos_form_obj.submit();
         removeAllSelectedQtyBadges();
-        $('input#is_suspend').val(0);
+        // $('input#is_suspend').val(0);
     });
 
     //fix select2 input issue on modal
@@ -1795,6 +1795,8 @@ $(document).ready(function () {
                     dataType: 'json',
                     success: function (result) {
                         if (result.success == 1) {
+                        $('input#is_suspend').val(0);
+
                             if (result.whatsapp_link) {
                                 window.open(result.whatsapp_link);
                             }
