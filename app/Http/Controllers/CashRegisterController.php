@@ -141,9 +141,9 @@ class CashRegisterController extends Controller
                 // Include sell transaction payments OR customer payments
                 $q->where(function ($query) {
                     $query->whereHas('transaction', function ($q) {
-                        $q->where('type', 'sell');
+                        $q->where('type', '=', 'sell');
                     })
-                    ->orWhereNotNull('payment_for');
+                    ->whereNotNull('payment_for');
                 })
                 // Exclude payments already recorded in cash register
                 ->where(function ($query) use($id) {
@@ -156,7 +156,7 @@ class CashRegisterController extends Controller
                 });
             })
             ->sum('amount');
-        
+
         // Calculate sell return refund amount from modal (all methods) to show in section b)
         $modalSellReturnRefundTotal = TransactionPayment::where('created_by', $user_id)
             ->whereBetween('created_at', [$open_time, $close_time])
@@ -310,7 +310,7 @@ class CashRegisterController extends Controller
                     $query->whereHas('transaction', function ($q) {
                         $q->where('type', 'sell');
                     })
-                    ->orWhereNotNull('payment_for');
+                    ->whereNotNull('payment_for');
                 })
                 // Exclude payments already recorded in cash register
                 ->where(function ($query) use($id) {
