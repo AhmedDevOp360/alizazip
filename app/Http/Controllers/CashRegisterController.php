@@ -143,9 +143,10 @@ class CashRegisterController extends Controller
                 $q->where(function ($query) {
                     $query->whereHas('transaction', function ($q) {
                         $q->where('type', '=', 'sell');
-                    })
-                    ->whereNotNull('payment_for');
-                })
+                    })->orWhere(function ($query) {
+                        $query->where('payment_type', 'credit')->whereNull('transaction_id');
+                    });
+               })
                 // Exclude payments already recorded in cash register
                 ->where(function ($query) use($id) {
                     $query->whereDoesntHave('transaction', function ($q) use($id) {
@@ -315,7 +316,9 @@ class CashRegisterController extends Controller
                     $query->whereHas('transaction', function ($q) {
                         $q->where('type', 'sell');
                     })
-                    ->whereNotNull('payment_for');
+                    ->orWhere(function ($query) {
+                        $query->where('payment_type', 'credit')->whereNull('transaction_id');
+                    });
                 })
                 // Exclude payments already recorded in cash register
                 ->where(function ($query) use($id) {
