@@ -21,7 +21,7 @@
         <div class="col-sm-4">
           <div class="form-group" style="font-size:18px ;color:red">
             {!! Form::label('closing_amount', __( 'cash_register.total_cash' ) . ':*') !!} (Restar la Base)
-              {!! Form::text('closing_amount', @num_format($register_details->cash_in_hand + $backendPaymentAmount + $register_details->total_cash - $register_details->total_cash_refund - $register_details->total_cash_expense - ($modalCashSellReturnRefund ?? 0)), ['class' => 'form-control input_number', 'required', 'placeholder' => __( 'cash_register.total_cash' ) ]); !!}
+              {!! Form::text('closing_amount', @num_format($register_details->cash_in_hand + $backendPaymentAmount + $register_details->total_cash - $register_details->total_cash_refund - $register_details->total_cash_expense - ($modalCashSellReturnRefund ?? 0) - $cashWithdrawalAmount), ['class' => 'form-control input_number', 'required', 'placeholder' => __( 'cash_register.total_cash' ) ]); !!}
           </div>
         </div>
         <!-- <div class="col-sm-4">

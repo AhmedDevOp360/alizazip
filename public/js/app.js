@@ -1833,6 +1833,37 @@ $(document).ready(function() {
         });
     });
 
+    $(document).on('click', 'a.delete-cashwithdrawal', function(e) {
+        e.preventDefault();
+        swal({
+            title: LANG.sure,
+            text: LANG.confirm_delete_cash_withdrawal,
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then(willDelete => {
+            if (willDelete) {
+                var href = $(this).data('href');
+                var data = $(this).serialize();
+
+                $.ajax({
+                    method: 'DELETE',
+                    url: href,
+                    dataType: 'json',
+                    data: data,
+                    success: function(result) {
+                        if (result.success === true) {
+                            toastr.success(result.msg);
+                            window.cash_withdrawals_table.ajax.reload();
+                        } else {
+                            toastr.error(result.msg);
+                        }
+                    },
+                });
+            }
+        });
+    });
+
     $(document).on('change', '.payment_types_dropdown', function() {
         var payment_type = $(this).val();
         var to_show = null;

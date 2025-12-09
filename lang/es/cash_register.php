@@ -27,4 +27,10 @@
      'close' => 'Cerrar', /* modified */
      'total_refund' => 'Devoluciones',
      'refunds' => 'Devoluciones',
+    'cash_withdrawals' => 'Retiros de efectivo',
+    'created_by' => 'Creado por',
+    'withdraw_cash' => 'retirar efectivo',
+    'add_cash_withdrawal' => 'Agregar retiro de efectivo',
+    'view_cash_withdrawals' => 'Ver retiros de efectivo',
+
  ];

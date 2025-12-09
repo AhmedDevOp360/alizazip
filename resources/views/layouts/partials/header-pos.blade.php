@@ -321,6 +321,13 @@
     <div class="col-md-2">
         <div class="d-flex justify-content-center mt-3 tw-h-auto m-0 no-print">
             <div  id="categories-container" style="display:flex;gap:10px; overflow-y: auto; padding-bottom: 10px;wid">
+                {{-- @can('expense.add') --}}
+                    <button type="button" title="{{ __('cash_register.withdraw_cash') }}" data-placement="bottom"
+                        class="tw-bg-white tw-dw-btn tw-cursor-pointer btn-modal"
+                        style="margin-top: 10px; height: 5vh; font-size: 15px" id="withdraw-cash">
+                        <strong><i class="fa fas fa-minus-circle" style=" font-size:14px ;color:red"></i> @lang('cash_register.withdraw_cash')</strong>
+                    </button>
+                {{-- @endcan --}}
                 @can('expense.add')
                     <button type="button" title="{{ __('expense.add_expense') }}" data-placement="bottom"
                         class="tw-bg-white tw-dw-btn tw-cursor-pointer btn-modal"

@@ -4533,6 +4533,42 @@ $('#sales_order_ids').on('select2:unselect', function (e) {
         });
 });
 
+$(document).on('click', '#withdraw-cash', function () {
+    $.ajax({
+        url: '/cash-withdrawals/create',
+        data: {
+            location_id: $('#select_location_id').val(),
+        },
+        dataType: 'html',
+        success: function (result) {
+            console.log(result)
+            $('#cash-withdrawal-modal').html(result);
+            $('#cash-withdrawal-modal').modal('show');
+        },
+    });
+});
+
+
+$(document).on('submit', 'form#cash_withdrawal_form', function (e) {
+    e.preventDefault();
+    var data = $(this).serialize();
+
+    $.ajax({
+        method: 'POST',
+        url: $(this).attr('action'),
+        dataType: 'json',
+        data: data,
+        success: function (result) {
+            if (result.success == true) {
+                $('#cash-withdrawal-modal').modal('hide');
+                toastr.success(result.msg);
+            } else {
+                toastr.error(result.msg);
+            }
+        },
+    });
+});
+
 $(document).on('click', '#add_expense', function () {
     $.ajax({
         url: '/expenses/create',

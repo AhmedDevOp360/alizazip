@@ -28,4 +28,8 @@ return [
     'total_refund' => 'Total Refund',
     'refunds' => 'Refunds',
     'register_not_opened' => 'Register Not Opened',
+    'cash_withdrawals' => 'Cash Withdrawals',
+    'view_cash_withdrawals' => 'View Cash Withdrawals',
+    'withdraw_cash' => 'Withdraw cash',
+    'add_cash_withdrawal' => 'Add Cash Withdrawal',
 ];

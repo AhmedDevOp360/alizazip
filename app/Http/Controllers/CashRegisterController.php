@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\BusinessLocation;
 use App\CashRegister;
 use App\CashRegisterInformation;
+use App\CashWithdrawal;
 use App\TransactionPayment;
 use App\Utils\CashRegisterUtil;
 use App\Utils\ModuleUtil;
@@ -157,6 +158,10 @@ class CashRegisterController extends Controller
             })
             ->sum('amount');
 
+        $cashWithdrawalAmount = CashWithdrawal::where('cash_register_id', $id)
+            ->whereBetween('created_at', [$open_time, $close_time])
+            ->sum('amount');
+
         // Calculate sell return refund amount from modal (all methods) to show in section b)
         $modalSellReturnRefundTotal = TransactionPayment::where('created_by', $user_id)
             ->whereBetween('created_at', [$open_time, $close_time])
@@ -195,7 +200,7 @@ class CashRegisterController extends Controller
             ->toArray();
             
         return view('cash_register.register_details')
-                    ->with(compact('register_details', 'details', 'payment_types', 'close_time', 'backendPaymentAmount', 'modalSellReturnRefundTotal', 'modalCashSellReturnRefund', 'modalRefundsByMethod'));
+                    ->with(compact('register_details', 'details', 'payment_types', 'close_time', 'backendPaymentAmount', 'modalSellReturnRefundTotal', 'modalCashSellReturnRefund', 'modalRefundsByMethod', 'cashWithdrawalAmount'));
     }
 
     /**
@@ -323,6 +328,10 @@ class CashRegisterController extends Controller
                 });
             })
             ->sum('amount');
+
+        $cashWithdrawalAmount = CashWithdrawal::where('cash_register_id', $id)
+            ->whereBetween('created_at', [$open_time, $close_time])
+            ->sum('amount');
         
         // Calculate sell return refund amount from modal (all methods) to show in section b)
         $modalSellReturnRefundTotal = TransactionPayment::where('created_by', $user_id)
@@ -362,7 +371,7 @@ class CashRegisterController extends Controller
             ->toArray();
             
         return view('cash_register.close_register_modal')
-                    ->with(compact('register_details', 'details', 'payment_types', 'pos_settings', 'backendPaymentAmount', 'modalSellReturnRefundTotal', 'modalCashSellReturnRefund', 'modalRefundsByMethod'));
+                    ->with(compact('register_details', 'details', 'payment_types', 'pos_settings', 'backendPaymentAmount', 'modalSellReturnRefundTotal', 'modalCashSellReturnRefund', 'modalRefundsByMethod', 'cashWithdrawalAmount'));
     }
 
     /**

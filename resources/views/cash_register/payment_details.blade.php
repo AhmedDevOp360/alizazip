@@ -286,6 +286,14 @@
           <b><span class="display_currency" data-currency_symbol="true">{{ $backendPaymentAmount }}</span></b>
         </td>
       </tr>
+      <tr class="">
+        <th>
+          h) @lang('cash_register.cash_withdrawals'):
+        </th>
+        <td>
+          <b><span class="display_currency" data-currency_symbol="true">{{ $cashWithdrawalAmount}}</span></b>
+        </td>
+      </tr>
     </table>
   </div>
 </div>

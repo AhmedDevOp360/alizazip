@@ -24,6 +24,7 @@ LANG = {
 "some_error_in_input_field": "Hace falta algunos datos, verifique e intente de nuevo !!",
 "confirm_delete_expense_category": "Esta categoría junto con todos los gastos en esta categoría se eliminarán",
 "confirm_delete_expense": "Este gasto se eliminará",
+'confirm_delete_cash_withdrawal': 'Esta retiro de efectivo se eliminará',
 "confirm_delete_payment": "Este pago se eliminará",
 "confirm_delete_user": "Este usuario será eliminado",
 "confirm_delete_contact": "Este contacto será eliminado",

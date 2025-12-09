@@ -24,6 +24,7 @@ LANG = {
     'some_error_in_input_field': 'Invalid inputs, Check & try again!!',
     'confirm_delete_expense_category': 'This category along with all expenses under this category will be deleted.',
     'confirm_delete_expense': 'This expense will be deleted.',
+    'confirm_delete_cash_withdrawal': 'This cash withdrawal will be deleted.',
     'confirm_delete_payment': 'This payment will be deleted.',
     'confirm_delete_user': 'This user will be deleted',
     'confirm_delete_contact': 'This contact will be deleted',

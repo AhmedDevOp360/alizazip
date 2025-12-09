@@ -13,6 +13,7 @@ use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessLocationController;
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\CashRegisterInformationController;
+use App\Http\Controllers\CashWithdrawalController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CombinedPurchaseReturnController;
 use App\Http\Controllers\ContactController;
@@ -373,6 +374,9 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     //Expenses...
     Route::resource('expenses', ExpenseController::class);
+
+    //Cash withdrawals (manual cash out from register)
+    Route::resource('cash-withdrawals', CashWithdrawalController::class);
 
     //Transaction payments...
     // Route::get('/payments/opening-balance/{contact_id}', 'TransactionPaymentController@getOpeningBalancePayments');
