@@ -22,7 +22,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         {!! Form::label('amount', __('sale.amount') . ':*') !!}
-                        {!! Form::text('amount', null, ['class' => 'form-control input_number', 'required']) !!}
+                        {!! Form::text('amount', null, ['class' => 'form-control input_number', 'id' => 'withdrawal-amount', 'required']) !!}
                     </div>
                 </div>
 
@@ -39,7 +39,7 @@
         </div>
 
         <div class="modal-footer">
-            <button type="submit" class="tw-dw-btn tw-dw-btn-success tw-text-white">
+            <button type="submit" id="submit-withdrawal-form" class="tw-dw-btn tw-dw-btn-success tw-text-white">
                 @lang('messages.save')
             </button>
             <button type="button" class="tw-dw-btn tw-dw-btn-neutral tw-text-white" data-dismiss="modal">

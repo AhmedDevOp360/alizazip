@@ -4541,7 +4541,6 @@ $(document).on('click', '#withdraw-cash', function () {
         },
         dataType: 'html',
         success: function (result) {
-            console.log(result)
             $('#cash-withdrawal-modal').html(result);
             $('#cash-withdrawal-modal').modal('show');
         },
@@ -4550,6 +4549,9 @@ $(document).on('click', '#withdraw-cash', function () {
 
 
 $(document).on('submit', 'form#cash_withdrawal_form', function (e) {
+    var newAmount = __read_number($('#withdrawal-amount'));
+    $('#withdrawal-amount').val(newAmount);
+       
     e.preventDefault();
     var data = $(this).serialize();
 

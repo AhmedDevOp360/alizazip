@@ -62,4 +62,5 @@
      'shipping' => 'Domicilio',
      'shipping_details' => 'Detalles del Envío',
      'shipping_charges' => 'Domicilio',
+     'note' => 'Nota'
  ];

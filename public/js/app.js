@@ -1863,6 +1863,16 @@ $(document).ready(function() {
             }
         });
     });
+    
+    $(document).on('keyup', 'input#withdrawal-amount', function () {
+        $(this).val(__currency_trans_from_en($(this).val(), false, false));
+    });
+
+    $('#submit-withdrawal-form').on('click', function() {
+        var newAmount = __read_number($('#withdrawal-amount'));
+        $('#withdrawal-amount').val(newAmount);
+        $('#cash_withdrawal_form').submit();
+    });
 
     $(document).on('change', '.payment_types_dropdown', function() {
         var payment_type = $(this).val();
